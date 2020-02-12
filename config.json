@@ -1,0 +1,36 @@
+{
+	"https": {
+		"keys": {
+			"private": "/etc/letsencrypt/live/mitchelgeer.com/privkey.pem",
+			"public": "/etc/letsencrypt/live/mitchelgeer.com/fullchain.pem"
+		}
+	},
+	"routes": [{
+		"path": {
+			"from": "/",
+			"to": "/var/www/html/"
+		},
+		"settings": {
+			"secure": true,
+			"type": "static"
+		}
+	}, {
+		"path": {
+			"from": "/manga_dashboard",
+			"to": "/var/www/html/projects/manga_dashboard"
+		},
+		"settings": {
+			"secure": true,
+			"type": "static"
+		}
+	}, {
+		"path": {
+			"from": "/manga_dashboard/api*",
+			"to": "http://localhost:2166/api"
+		},
+		"settings": {
+			"secure": true,
+			"type": "dynamic"
+		}
+	}]
+}
