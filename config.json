@@ -1,8 +1,8 @@
 {
 	"https": {
 		"keys": {
-			"private": "/etc/letsencrypt/live/mitchelgeer.com/privkey.pem",
-			"public": "/etc/letsencrypt/live/mitchelgeer.com/fullchain.pem"
+			"private": "path/to/key",
+			"public": "path/to/key"
 		}
 	},
 	"routes": [{
