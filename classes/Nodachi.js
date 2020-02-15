@@ -1,9 +1,9 @@
-const _ = require('lodash');
-const cors = require('cors');
-const express = require('express');
-const fs = require('fs');
-const https = require('https');
-const request = require('request');
+const _ = require("lodash");
+const cors = require("cors");
+const express = require("express");
+const fs = require("fs");
+const https = require("https");
+const request = require("request");
 
 /**
  * An Apache alternative for the aspiring Node.js developer.
@@ -100,45 +100,68 @@ class Nodachi {
 	initRoutes(unsecure, secure) {
 		_.each(this.config.routes, route => {
 			this.initRoute(route);
+
+			if (route.settings.secure) {
+				this.initSecureRedirect(route);
+			}
 		});
 	}
 
 	/**
 	 * Initializes a single server route.
-	 * @param {string} type
-	 * @param {string} from
-	 * @param {string} to
+	 * @param {Object} route
 	 */
 	initRoute(route) {
 		let app = route.settings.secure ? this.httpsServer : this.httpServer;
 
-		if (route.settings.type === 'dynamic') {
+		if (route.settings.type === "dynamic") {
 			// dynamic route (web server)
 
 			// establish forwarding
 			app.all(`${route.path.from}`, (req, res, next) => {
-				let localTarget = req.path.slice(route.path.from.replace(/\*$/, '').length);
-				let queryKeys = _.map(Object.keys(req.query), k => `${k}=${req.query[k]}`).join('&');
-				let strGet = queryKeys.length > 0 ? `?${queryKeys}` : '';
+				let localTarget = req.path.slice(
+					route.path.from.replace(/\*$/, "").length
+				);
+				let queryKeys = _.map(
+					Object.keys(req.query),
+					k => `${k}=${req.query[k]}`
+				).join("&");
+				let strGet = queryKeys.length > 0 ? `?${queryKeys}` : "";
 				let targetPath = `${route.path.to}${localTarget}${strGet}`;
 
 				// make proxied request
-				request({
-					method: req.method,
-					uri: targetPath,
-					form: req.body
-				}, (error, response, body) => {
-					if (error) {
-						res.redirect('/');
-					} else {
-						res.send(body);
+				request(
+					{
+						method: req.method,
+						uri: targetPath,
+						form: req.body
+					},
+					(error, response, body) => {
+						if (error) {
+							res.redirect("/");
+						} else {
+							res.send(body);
+						}
 					}
-				});
+				);
 			});
-		} else if (route.settings.type === 'static') {
+		} else if (route.settings.type === "static") {
 			// static route (static files)
-			app.use(route.path.from, (express.static(route.path.to)));
+			app.use(route.path.from, express.static(route.path.to));
 		}
+	}
+
+	/**
+	 * Initializes a redirect route.
+	 * @param {Object} route
+	 */
+	initSecureRedirect(route) {
+		let app = this.httpServer;
+
+		// redirect traffic to the secured page
+		app.all(`${route.path.from}`, (req, res, next) => {
+			res.redirect("https://" + req.headers.host + req.url);
+		});
 	}
 }
 
